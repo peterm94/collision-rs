@@ -95,8 +95,6 @@ use std::cmp::max;
 use std::fmt;
 
 use cgmath::num_traits::NumCast;
-use rand;
-use rand::Rng;
 
 use crate::prelude::*;
 
@@ -248,6 +246,7 @@ where
     updated_list: Vec<usize>,
     root_index: usize,
     refit_nodes: Vec<(u32, usize)>,
+    refit_count: u32,
 }
 
 impl<T> Default for DynamicBoundingVolumeTree<T>
@@ -263,6 +262,7 @@ where
             updated_list: Vec::default(),
             root_index: 0,
             refit_nodes: Vec::default(),
+            refit_count: 0
         }
     }
 }
@@ -901,9 +901,11 @@ where
             }
         }
 
+
+        self.refit_count = (self.refit_count + 1) % PERFORM_ROTATION_PERCENTAGE;
         // Only do rotations occasionally, as they are fairly expensive, and shouldn't be overused.
         // For most scenarios, the majority of shapes will not have moved, so this is fine.
-        if rand::thread_rng().gen_range(0..100) < PERFORM_ROTATION_PERCENTAGE {
+        if self.refit_count == 0 {
             self.rotate(node_index);
         }
     }
